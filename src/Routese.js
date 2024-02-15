@@ -13,7 +13,8 @@ const Routese = () => {
 
             <Box sx={{padding:"30px 30px"}}>
                 <Routes>
-                    <Route exact path="/" element={<Home />} />
+                    <Route exact path="*" element={<Home />} />
+                    <Route exact path="/home" element={<Home />} />
                     <Route path="/admin" element={<Admin />} />
                 </Routes>
             </Box>
