@@ -20,6 +20,7 @@ import {
 import LoadingButton from "@mui/lab/LoadingButton";
 import {DeleteOutline, SaveOutlined} from "@mui/icons-material";
 import {Alert} from "@mui/lab";
+import {Link} from "react-router-dom";
 
 export default function AdminHome(){
     const [szallasok, setSzallasok] = useState([]);
@@ -31,11 +32,15 @@ export default function AdminHome(){
     const [update, setUpdate] = useState(0);
     const [open, setOpen] = useState(false);
 
+
     useEffect(() => {
         axios.get("https://nodejs.sulla.hu/data").then((response) => {
             setSzallasok(response.data);
+            setIsLoading(false)
+            window.history.pushState({}, "", "http://localhost:3000/get-all");
+
         }).catch((error) => {
-            setMessage(error)
+            setMessage(error + "")
             setSnackbarOpen(true)
         });
     }, [update]);
@@ -59,9 +64,11 @@ export default function AdminHome(){
 
     const handleClose = () => {
         setOpen(false);
+        window.history.pushState({}, "", "http://localhost:3000/get-all");
     };
 
     const handleGetById = (szallasId) => {
+        window.history.pushState({}, "", "http://localhost:3000/get/" + szallasId);
         axios.get(`https://nodejs.sulla.hu/data/${szallasId}`).then((response) => {
             setFormData(response.data);
             setOpenDialog(true);
@@ -69,6 +76,8 @@ export default function AdminHome(){
     };
 
     const handleDelete = () => {
+        window.history.pushState({}, "", "http://localhost:3000/delete/"+formData.id);
+
         axios.delete(`https://nodejs.sulla.hu/data/${formData.id}`).then(() => {
             setSzallasok(szallasok.filter((s) => s.id !== formData.id));
         }).then(() => {
@@ -82,11 +91,13 @@ export default function AdminHome(){
             setIsLoading(false)
             setFormData(false)
             setOpenDialog(false);
+            window.history.pushState({}, "", "http://localhost:3000/get-all");
         });
     }
 
     const handleSubmit = () => {
         setIsLoading(true);
+        window.history.pushState({}, "", "http://localhost:3000/post");
 
         axios.post("https://nodejs.sulla.hu/data", formData)
             .then((response) => {
@@ -100,6 +111,8 @@ export default function AdminHome(){
             }).finally(()=>{
             setIsLoading(false)
             setOpen(false)
+            window.history.pushState({}, "", "http://localhost:3000/get-all");
+
         });
     };
 
@@ -109,6 +122,7 @@ export default function AdminHome(){
 
     const handleSave = () => {
         setIsLoading(true);
+        window.history.pushState({}, "", "http://localhost:3000/put/"+formData.id);
 
         axios.put("https://nodejs.sulla.hu/data/"+formData.id, formData)
             .then((response) => {
@@ -123,22 +137,49 @@ export default function AdminHome(){
             setIsLoading(false)
             setFormData(false)
             setOpenDialog(false)
+            window.history.pushState({}, "", "http://localhost:3000/get-all");
         });
     };
 
     const handleDialogClose = () => {
         setOpenDialog(false);
+        window.history.pushState({}, "", "http://localhost:3000/get-all");
 
     };
 
-    if (szallasok.length === 0)
+    if (szallasok.length === 0 && isLoading)
         return (
-            <Backdrop
-                sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
-                open={true}
-            >
-                <CircularProgress color="inherit" />
-            </Backdrop>
+            <Box>
+                <Grid container spacing={3}>
+                    <Grid item xs={4} sm={4} md={3} key={"new"}>
+                        <Card sx={{ textAlign: "center" }}>
+                            <CardContent>
+                                <Typography variant="h5" component="h2">
+                                    Van új valami?
+                                </Typography>
+                                <Typography variant="body2" component="p">
+                                    Itt hozzáadhatja
+                                </Typography>
+                                <Link to={"/post"}
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={() => handleOpen()}
+                                >
+                                    Új hozzáadása
+                                </Link>
+                            </CardContent>
+                        </Card>
+                    </Grid>
+
+                </Grid>
+
+                <Backdrop
+                    sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+                    open={true}
+                >
+                    <CircularProgress color="inherit" />
+                </Backdrop>
+            </Box>
         );
 
     return (
